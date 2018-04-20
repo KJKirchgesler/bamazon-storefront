@@ -1,0 +1,29 @@
+{
+  "name": "bamazon-storefront",
+  "version": "1.0.0",
+  "description": "Amazon-like CLI storefront app",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KJKirchgesler/bamazon-storefront.git"
+  },
+  "keywords": [
+    "Bamazon",
+    "storefront",
+    "app"
+  ],
+  "author": "Kristen Kirchgesler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KJKirchgesler/bamazon-storefront/issues"
+  },
+  "homepage": "https://github.com/KJKirchgesler/bamazon-storefront#readme",
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "inquirer": "^5.2.0",
+    "mysql": "^2.15.0"
+  }
+}
