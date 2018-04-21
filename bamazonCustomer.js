@@ -46,3 +46,60 @@ function displayInventory() {
 
 }
 displayInventory();
+
+function purchaseItems() {
+
+	inquirer.prompt([{
+            name: "item_id",
+            type: "input",
+            message: "Please enter the ID number of the item that you would like to purchase.",
+            validate: function(value) {
+                if (isNaN(value) == false) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }, 
+
+        {
+            name: "stock_quantity",
+            type: "input",
+            message: "How many items would you like to buy?",
+            validate: function(value) {
+                if (isNaN(value) == false) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+        }]).then(function(answer) {
+        var itemId = answer.item_id - 1
+        var selectedItem = data[itemId]
+        var quantity = answer.stock_quantity
+           
+           if (quantity < selectedItem.stock_quantity) {
+               console.log("Your total for " + "(" + answer.stock_quantity + ")" + " - " + selectedItem.product_name + " is: " + selectedItem.price * quantity);
+               
+               var query = 'UPDATE products SET ? WHERE ?';
+               connection.query(query, [{
+                    stock_quantity: selectedItem.stock_quantity - quantity
+                }, 
+
+                {
+                    id: selectedItem.id
+                }], function(err, data) {
+                    //console.log(err);
+                    purchaseItems();
+                });
+
+            } else {
+                console.log("Sorry, insufficient Quanity at this time. All we have is " + selectedItem.stock_quantity + " in our Inventory.");
+                purchaseItems();
+            }
+        })
+    }
+//}
+
+purchaseItems();
