@@ -17,7 +17,7 @@ var connection = mysql.createConnection({
 });
 
 //Function to display the inventory table to customers
-function displayInventory() {
+function purchaseItems() {
 
 	var query = 'SELECT * FROM products';
 
@@ -42,15 +42,8 @@ function displayInventory() {
 	}
 	console.log(table.toString());
 
-});
-
-}
-displayInventory();
-
-function purchaseItems() {
-
 	inquirer.prompt([{
-            name: "item_id",
+            name: "selectID",
             type: "input",
             message: "Please enter the ID number of the item that you would like to purchase.",
             validate: function(value) {
@@ -63,7 +56,7 @@ function purchaseItems() {
         }, 
 
         {
-            name: "stock_quantity",
+            name: "howMany",
             type: "input",
             message: "How many items would you like to buy?",
             validate: function(value) {
@@ -75,31 +68,30 @@ function purchaseItems() {
             }
 
         }]).then(function(answer) {
-        var itemId = answer.item_id - 1
+        var itemId = answer.selectID - 1
         var selectedItem = data[itemId]
-        var quantity = answer.stock_quantity
+        var quantity = answer.howMany
            
            if (quantity < selectedItem.stock_quantity) {
-               console.log("Your total for " + "(" + answer.stock_quantity + ")" + " - " + selectedItem.product_name + " is: " + selectedItem.price * quantity);
+               console.log("Your purchase has been processed. Your total for " + "(" + answer.howMany + ")" + " - " + selectedItem.product_name + " is: " + selectedItem.price * quantity);
                
-               var query = 'UPDATE products SET ? WHERE ?';
-               connection.query(query, [{
+               var nextQuery = 'UPDATE products SET ? WHERE ?';
+               connection.query(nextQuery, [{
                     stock_quantity: selectedItem.stock_quantity - quantity
                 }, 
 
                 {
                     id: selectedItem.id
                 }], function(err, data) {
-                    //console.log(err);
                     purchaseItems();
                 });
 
             } else {
-                console.log("Sorry, insufficient Quanity at this time. All we have is " + selectedItem.stock_quantity + " in our Inventory.");
+                console.log("Sorry, we have insufficient stock at this time. All we have is " + selectedItem.stock_quantity + " in our inventory.");
                 purchaseItems();
             }
         })
-    }
-//}
+    })
+}
 
 purchaseItems();
