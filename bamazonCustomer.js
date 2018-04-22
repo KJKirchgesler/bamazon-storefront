@@ -17,7 +17,7 @@ var connection = mysql.createConnection({
 });
 
 //Function to display the inventory table to customers
-function purchaseItems() {
+function displayInventory() {
 
 	var query = 'SELECT * FROM products';
 
@@ -26,7 +26,7 @@ function purchaseItems() {
 
 	//Creates a table to display the data from the MySQL database
 	var table = new Table({
-		head: ['Item Id#', 'Product Name', 'Price'],
+		head: ['Item Id', 'Product Name', 'Price'],
 		style: {
 			head: ['blue'],
 			compact: false,
@@ -41,11 +41,18 @@ function purchaseItems() {
 		);
 	}
 	console.log(table.toString());
+  purchaseItems();
 
-	inquirer.prompt([{
-            name: "selectID",
+  })
+}
+
+displayInventory();
+
+	function purchaseItems() {
+    inquirer.prompt([{
+            name: "itemId",
             type: "input",
-            message: "Please enter the ID number of the item that you would like to purchase.",
+            message: "Please enter the ID number of the product that you would like to purchase.",
             validate: function(value) {
                 if (isNaN(value) == false) {
                     return true;
@@ -56,7 +63,7 @@ function purchaseItems() {
         }, 
 
         {
-            name: "howMany",
+            name: "quantity",
             type: "input",
             message: "How many items would you like to buy?",
             validate: function(value) {
@@ -68,30 +75,46 @@ function purchaseItems() {
             }
 
         }]).then(function(answer) {
-        var itemId = answer.selectID - 1
-        var selectedItem = data[itemId]
-        var quantity = answer.howMany
+            var item = answer.itemId;
+            var quantity = answer.quantity;
+
+        
+            var selectQuery = 'SELECT * FROM products WHERE ?';
+                connection.query(selectQuery, {item_id: item}, function(err, data){
+                  if(err) console.log(err, "ERROR: That Item ID does not exist. Please select a valid Item ID.");
+
+                  if (data.length === 0) {
+                    console.log("ERROR: That Item ID does not exist. Please select a valid Item ID.");
+                    displayInventory();
+
+                  } else {
+                    var selectedItem = data[0];
+
+
            
-           if (quantity < selectedItem.stock_quantity) {
-               console.log("Your purchase has been processed. Your total for " + "(" + answer.howMany + ")" + " - " + selectedItem.product_name + " is: " + selectedItem.price * quantity);
-               
-               var nextQuery = 'UPDATE products SET ? WHERE ?';
-               connection.query(nextQuery, [{
-                    stock_quantity: selectedItem.stock_quantity - quantity
-                }, 
+                if (quantity <= selectedItem.stock_quantity) {
+                console.log("Congratulations! The product that you ordered is in stock. Processing your order....");
 
-                {
-                    id: selectedItem.id
-                }], function(err, data) {
-                    purchaseItems();
-                });
 
-            } else {
-                console.log("Sorry, we have insufficient stock at this time. All we have is " + selectedItem.stock_quantity + " in our inventory.");
-                purchaseItems();
-            }
-        })
+                var updateQuery = 'UPDATE products SET stock_quantity = ' + (selectedItem.stock_quantity - quantity) + ' WHERE item_id = ' + item;
+                  connection.query(updateQuery, function(err, data) {
+                  if (err) throw err;
+
+                  console.log("Your order has been placed. Your total is $" + selectedItem.price * quantity);
+                  console.log("Thank you for shopping with us!");
+
+                  }) 
+
+                  } else {
+                  console.log("Sorry, we don't have enough items in stock, please modify your order.");
+                  displayInventory();
+
+        }
+      }
     })
+  })
 }
 
-purchaseItems();
+
+
+               
